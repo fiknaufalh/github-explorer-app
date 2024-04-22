@@ -57,11 +57,7 @@ class DetailActivity : AppCompatActivity() {
                 loading -> showLoading(loading)
         }
 
-        detailViewModel.errorMsg.observe(this) {
-                msg -> setErrorMessage(msg)
-        }
-
-        detailViewModel.getDetail(userName!!)
+        detailViewModel.findDetail(userName!!)
 
         binding.backTab.setOnClickListener {
             finish()

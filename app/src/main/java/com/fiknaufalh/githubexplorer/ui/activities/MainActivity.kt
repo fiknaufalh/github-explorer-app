@@ -1,37 +1,33 @@
 package com.fiknaufalh.githubexplorer.ui.activities
 
-import android.app.SearchManager
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.fiknaufalh.githubexplorer.R
 import com.fiknaufalh.githubexplorer.adapters.UserAdapter
 import com.fiknaufalh.githubexplorer.data.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.databinding.ActivityMainBinding
-import com.fiknaufalh.githubexplorer.utils.Event
-import com.fiknaufalh.githubfinder.viewmodels.MainViewModel
-import com.google.android.material.snackbar.Snackbar
+import com.fiknaufalh.githubexplorer.viewmodels.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainViewModel: MainViewModel
-    private var isSearched = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         supportActionBar?.hide()
+
+        mainViewModel = ViewModelProvider(this,
+            ViewModelProvider.NewInstanceFactory())[MainViewModel::class.java]
 
         val layoutManager = LinearLayoutManager(this)
         binding.rvUsers.layoutManager = layoutManager
@@ -39,90 +35,60 @@ class MainActivity : AppCompatActivity() {
         val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
         binding.rvUsers.addItemDecoration(itemDecoration)
 
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchView = binding.searchUser
-        initializeSearchView(searchManager, searchView)
+        with (binding) {
+            searchView.setupWithSearchBar(searchBar)
+            searchView
+                .editText
+                .setOnEditorActionListener { _, _, _ ->
+                    mainViewModel.changeQuery(searchView.text.toString())
+                    val query = mainViewModel.searchQuery.value
+                    searchBar.setText(query)
 
-        mainViewModel = ViewModelProvider(this,
-            ViewModelProvider.NewInstanceFactory())[MainViewModel::class.java]
+                    if (query?.isEmpty()!!) {
+                        mainViewModel.setSearch(false)
+                        mainViewModel.findUsers("A")
+                    } else {
+                        mainViewModel.setSearch(true)
+                        mainViewModel.findUsers(searchView.text.toString())
+                    }
+
+                    searchView.hide()
+                    false
+                }
+        }
 
         mainViewModel.users.observe(this) {
-                users -> setUserListData(users)
+            users -> setUserListData(users)
         }
 
-        mainViewModel.isLoading.observe(this) {
-                isLoading -> showLoading(isLoading)
-        }
-
-        mainViewModel.errorMsg.observe(this) {
-                msg -> setErrorMessage(msg)
+        mainViewModel.isMainLoading.observe(this) {
+            isMainLoading -> showLoading(isMainLoading)
         }
     }
 
     private fun setUserListData(users: SearchResponse) {
         val adapter = UserAdapter(
-            users.items!!,
             onClickCard = {
                 val intent = Intent(this@MainActivity, DetailActivity::class.java)
                 intent.putExtra(resources.getString(R.string.passing_query), it.login)
                 startActivity(intent)
             })
 
+        adapter.submitList(users.items)
         binding.rvUsers.adapter = adapter
-        if (isSearched) {
-            binding.tvTotalResult.text = resources.getString(R.string.search_result_text, users.totalCount, users.items.size)
+        if (mainViewModel.isSearched.value!!) {
+            binding.tvTotalResult.text =
+                resources.getString(
+                    R.string.search_result_text,
+                    users.totalCount,
+                    users.items?.size ?: 0
+                )
+        } else {
+            binding.tvTotalResult.text = resources.getString(R.string.search_me_text)
         }
     }
 
     private fun showLoading(isLoading: Boolean) {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-    }
-
-    private fun setErrorMessage(msg: Event<String>) {
-        msg.getContentIfNotHandled()?.let {
-            val snackBar = Snackbar.make(
-                window.decorView.rootView,
-                it,
-                Snackbar.LENGTH_SHORT
-            )
-            snackBar.anchorView = binding.botView
-            snackBar.show()
-        }
-    }
-
-    private fun initializeSearchView(searchManager: SearchManager, searchView: SearchView) {
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        searchView.queryHint = resources.getString(R.string.search_placeholder)
-        searchView.setOnClickListener {
-            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            searchView.clearFocus()
-            inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
-        }
-
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(q: String?): Boolean {
-                searchView.clearFocus()
-                return true
-            }
-
-            override fun onQueryTextChange(q: String?): Boolean {
-                if (q?.length!! >= 3) {
-                    binding.rvUsers.visibility = RecyclerView.VISIBLE
-                    mainViewModel.searchUsers(q.toString())
-                    isSearched = true
-                } else if (q.isEmpty()) {
-                    binding.rvUsers.visibility = RecyclerView.VISIBLE
-                    binding.tvTotalResult.text = resources.getString(R.string.search_me_text)
-                    mainViewModel.searchUsers("a")
-                    isSearched = false
-                } else {
-                    binding.rvUsers.visibility = RecyclerView.GONE
-                    binding.tvTotalResult.text = resources.getString(R.string.search_me_text)
-                    isSearched = false
-                }
-
-                return false
-            }
-        })
     }
 }

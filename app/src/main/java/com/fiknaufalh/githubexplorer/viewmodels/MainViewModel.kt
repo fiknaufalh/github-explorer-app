@@ -1,4 +1,4 @@
-package com.fiknaufalh.githubfinder.viewmodels
+package com.fiknaufalh.githubexplorer.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fiknaufalh.githubexplorer.data.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.data.retrofit.ApiConfig
-import com.fiknaufalh.githubexplorer.utils.Event
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,39 +15,49 @@ class MainViewModel: ViewModel() {
     private val _users = MutableLiveData<SearchResponse>()
     val users: LiveData<SearchResponse> = _users
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isMainLoading = MutableLiveData<Boolean>()
+    val isMainLoading: LiveData<Boolean> = _isMainLoading
 
-    private val _errorMsg = MutableLiveData<Event<String>>()
-    val errorMsg: LiveData<Event<String>> = _errorMsg
+    private val _searchQuery = MutableLiveData<String>()
+    val searchQuery: LiveData<String> = _searchQuery
+
+    private val _isSearched = MutableLiveData<Boolean>()
+    val isSearched: LiveData<Boolean> = _isSearched
 
     init {
-        searchUsers("A")
+        findUsers("A")
+        _isSearched.value = false
     }
 
-    fun searchUsers(q: String) {
-        _isLoading.value = true
+    fun findUsers(q: String) {
+        _isMainLoading.value = true
         val client = ApiConfig.getApiService().searchUser(q)
         client.enqueue(object : Callback<SearchResponse> {
             override fun onResponse(
                 call: Call<SearchResponse>,
                 response: Response<SearchResponse>
             ) {
-                _isLoading.value = false
+                _isMainLoading.value = false
                 if (response.isSuccessful) {
                     _users.value = response.body()
                 }
                 else {
-                    _errorMsg.value = Event("Server Error, ${response.message()}")
                     Log.d(TAG, "onFailResponse: ${response.message()}")
                 }
             }
             override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
-                _isLoading.value = false
-                _errorMsg.value = Event("Error, check your connection!")
+                _isMainLoading.value = false
                 Log.d(TAG, "onFailure: ${t.message}")
             }
         })
+    }
+
+    fun changeQuery(q: String) {
+        _searchQuery.value = q
+    }
+
+    fun setSearch(s: Boolean) {
+        _isSearched.value = s
     }
 
     companion object {

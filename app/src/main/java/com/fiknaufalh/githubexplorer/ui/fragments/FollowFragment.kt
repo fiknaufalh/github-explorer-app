@@ -59,17 +59,18 @@ class FollowFragment : Fragment() {
         binding.rvFollows.addItemDecoration(itemDecoration)
 
         val type = if (position == 1) "followers" else "following"
-        detailViewModel.getFollow(type, username!!)
+        detailViewModel.findFollow(type, username!!)
     }
 
     private fun setFollowListData(list: List<UserItem>) {
         binding.tvTotalFollow.text = resources.getString(R.string.follow_result, list.size)
         if (list.isNotEmpty()) {
-            val adapter = UserAdapter(list, onClickCard = {
+            val adapter = UserAdapter(onClickCard = {
                 val intent = Intent(context, DetailActivity::class.java)
                 intent.putExtra("q", it.login)
                 startActivity(intent)
             })
+            adapter.submitList(list)
             binding.rvFollows.adapter = adapter
         } else {
             binding.emptyList.text = getString(R.string.empty_list)
