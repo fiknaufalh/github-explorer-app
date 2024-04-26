@@ -1,16 +1,19 @@
 package com.fiknaufalh.githubexplorer.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fiknaufalh.githubexplorer.data.responses.SearchResponse
-import com.fiknaufalh.githubexplorer.data.retrofit.ApiConfig
+import com.fiknaufalh.githubexplorer.data.local.entity.FavoriteUser
+import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
+import com.fiknaufalh.githubexplorer.data.remote.retrofit.ApiConfig
+import com.fiknaufalh.githubexplorer.data.MainRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainViewModel: ViewModel() {
+class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
 
     private val _users = MutableLiveData<SearchResponse>()
     val users: LiveData<SearchResponse> = _users

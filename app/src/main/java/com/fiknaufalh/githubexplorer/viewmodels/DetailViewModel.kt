@@ -1,18 +1,19 @@
 package com.fiknaufalh.githubexplorer.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fiknaufalh.githubexplorer.data.responses.UserDetailResponse
-import com.fiknaufalh.githubexplorer.data.responses.UserItem
-import com.fiknaufalh.githubexplorer.data.retrofit.ApiConfig
-import com.fiknaufalh.githubexplorer.utils.Event
+import com.fiknaufalh.githubexplorer.data.remote.responses.UserDetailResponse
+import com.fiknaufalh.githubexplorer.data.remote.responses.UserItem
+import com.fiknaufalh.githubexplorer.data.remote.retrofit.ApiConfig
+import com.fiknaufalh.githubexplorer.data.MainRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class DetailViewModel : ViewModel() {
+class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() {
 
     private val _userDetail = MutableLiveData<UserDetailResponse>()
     val userDetail: LiveData<UserDetailResponse> = _userDetail
@@ -51,11 +52,9 @@ class DetailViewModel : ViewModel() {
     fun findFollow(type: String, username: String) {
 
         _isDetailLoading.value = true
-        val client = if (type == "followers") {
+        val client = if (type == "followers")
             ApiConfig.getApiService().getFollowers(username)
-        } else {
-            ApiConfig.getApiService().getFollowing(username)
-        }
+        else ApiConfig.getApiService().getFollowing(username)
 
         client.enqueue(object : Callback<List<UserItem>> {
             override fun onResponse(
@@ -66,7 +65,7 @@ class DetailViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _followList.value = response.body()
                 } else {
-                    Log.d(TAG, "onFailResponse: ${response.message()} ")
+                    Log.d(TAG, "onResponseFail: ${response.message()} ")
                 }
             }
 

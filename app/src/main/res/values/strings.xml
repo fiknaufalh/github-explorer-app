@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">GitHub Explorer</string>
     <string name="search">Search</string>
-    <string name="app_title">GitHub Finder</string>
     <string name="item_user">Item User</string>
     <string name="search_bar_hint">Search User</string>
     <string name="search_me_text">Find me! @fiknaufalh</string>
@@ -26,4 +25,8 @@
     <string name="splash_description">Welcome to GitHub Finder!</string>
     <string name="tab_text">%d %s</string>
     <string name="searchbar_hint">Search for user</string>
+    <string name="favorite_button">Favorite Button</string>
+    <string name="fav_list_title">Favorite List</string>
+    <string name="switch_mode_icon">Switch Mode Icon</string>
+    <string name="favorite_list_icon">Favorite List Icon</string>
 </resources>

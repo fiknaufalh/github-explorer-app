@@ -8,14 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.fiknaufalh.githubexplorer.R
 import com.fiknaufalh.githubexplorer.adapters.UserAdapter.MyViewHolder
-import com.fiknaufalh.githubexplorer.data.responses.UserItem
-import com.fiknaufalh.githubexplorer.databinding.ItemUserSearchBinding
+import com.fiknaufalh.githubexplorer.data.remote.responses.UserItem
+import com.fiknaufalh.githubexplorer.databinding.ItemUserCardBinding
 
 class UserAdapter(private val onClickCard: (UserItem) -> Unit):
     ListAdapter<UserItem, MyViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val binding = ItemUserSearchBinding.
+        val binding = ItemUserCardBinding.
         inflate(LayoutInflater.from(parent.context), parent, false)
         return MyViewHolder(binding)
     }
@@ -25,7 +25,7 @@ class UserAdapter(private val onClickCard: (UserItem) -> Unit):
         holder.bind(user)
     }
 
-    inner class MyViewHolder(val binding: ItemUserSearchBinding):
+    inner class MyViewHolder(val binding: ItemUserCardBinding):
         RecyclerView.ViewHolder(binding.root) {
         fun bind(user: UserItem) {
             binding.userName.text = user.login

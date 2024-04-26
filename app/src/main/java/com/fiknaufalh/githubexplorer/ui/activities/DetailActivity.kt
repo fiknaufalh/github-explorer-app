@@ -5,40 +5,61 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import com.bumptech.glide.Glide
 import com.fiknaufalh.githubexplorer.R
-import com.fiknaufalh.githubexplorer.adapters.SectionPagerAdapter
-import com.fiknaufalh.githubexplorer.data.responses.UserDetailResponse
+import com.fiknaufalh.githubexplorer.adapters.FollowPagerAdapter
+import com.fiknaufalh.githubexplorer.data.local.entity.FavoriteUser
+import com.fiknaufalh.githubexplorer.data.remote.responses.UserDetailResponse
 import com.fiknaufalh.githubexplorer.databinding.ActivityDetailBinding
 import com.fiknaufalh.githubexplorer.utils.DateConverter
-import com.fiknaufalh.githubexplorer.utils.Event
+import com.fiknaufalh.githubexplorer.utils.ViewModelFactory
 import com.fiknaufalh.githubexplorer.viewmodels.DetailViewModel
-import com.google.android.material.snackbar.Snackbar
+import com.fiknaufalh.githubexplorer.viewmodels.FavoriteViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
-    private lateinit var detailViewModel: DetailViewModel
+    private val detailViewModel by viewModels<DetailViewModel>() {
+        ViewModelFactory.getInstance(application)
+    }
+    private val favoriteViewModel by viewModels<FavoriteViewModel>() {
+        ViewModelFactory.getInstance(application)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportActionBar?.hide()
+
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.hide()
+
         val userName = intent.getStringExtra(resources.getString(R.string.passing_query))
 
-        detailViewModel = ViewModelProvider(
-            this, ViewModelProvider.NewInstanceFactory())[DetailViewModel::class.java]
+        detailViewModel.userDetail.observe(this) { user ->
+            setUserDetail(user)
+            favoriteViewModel.favoriteUsers.observe(this) {
+                binding.fabFavorite.setOnClickListener {
+                    val favoriteUser = FavoriteUser()
+                    favoriteUser.username = user.login!!
+                    favoriteUser.avatarUrl = user.avatarUrl
+                    favoriteUser.htmlUrl = user.htmlUrl!!
 
-        detailViewModel.userDetail.observe(this) {
-            setUserDetail(it)
-            binding.tvErrorDisplay.visibility = View.GONE
+                    if (favoriteViewModel.isFavorite(favoriteUser)) {
+                        favoriteViewModel.deleteFavorite(favoriteUser)
+                        binding.fabFavorite.setImageResource(R.drawable.ic_favorite_unfilled)
 
-            val sectionPagerAdapter = SectionPagerAdapter(this, it.login!!)
-            binding.viewPager.adapter = sectionPagerAdapter
+                    } else {
+                        favoriteViewModel.insertFavorite(favoriteUser)
+                        binding.fabFavorite.setImageResource(R.drawable.ic_favorite_filled)
+                    }
+                }
+            }
+
+            val followPagerAdapter = user.login?.let { it -> FollowPagerAdapter(this, it) }
+            binding.viewPager.adapter = followPagerAdapter
 
             TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
                 val currentTab = resources.getString(TAB_TITLES[position])
@@ -50,18 +71,19 @@ class DetailActivity : AppCompatActivity() {
 
                 tab.text = resources.getString(R.string.tab_text, count, currentTab)
             }.attach()
+
             supportActionBar?.elevation = 0f
         }
 
         detailViewModel.isLoading.observe(this) {
-                loading -> showLoading(loading)
+            loading -> showLoading(loading)
         }
 
         detailViewModel.findDetail(userName!!)
 
-        binding.backTab.setOnClickListener {
-            finish()
-        }
+        binding.backTab.setOnClickListener { finish() }
+
+
     }
 
     private fun setUserDetail(detail: UserDetailResponse) {
@@ -77,7 +99,7 @@ class DetailActivity : AppCompatActivity() {
             } else {
                 tvEmail.visibility = View.GONE
             }
-            ivUserProfile.borderColor = resources.getColor(R.color.white)
+//            ivUserProfile.borderColor = resources.getColor(R.color.white)
             ivUserProfile.borderWidth = 2
 
             ivUserProfile.setOnClickListener {
@@ -94,20 +116,6 @@ class DetailActivity : AppCompatActivity() {
 
     private fun showLoading(state: Boolean) {
         binding.progressBar.visibility = if (state) View.VISIBLE else View.GONE
-    }
-
-    private fun setErrorMessage(msg: Event<String>) {
-        msg.getContentIfNotHandled()?.let {
-            binding.tvErrorDisplay.visibility = View.VISIBLE
-            binding.tvErrorDisplay.text = it
-            val snackBar = Snackbar.make(
-                window.decorView.rootView,
-                it,
-                Snackbar.LENGTH_SHORT
-            )
-            snackBar.anchorView = binding.botView
-            snackBar.show()
-        }
     }
 
     companion object {
