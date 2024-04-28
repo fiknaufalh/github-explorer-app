@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activities.FavoriteActivity">
+    tools:context=".ui.activities.SettingActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/favToolbar"
@@ -41,34 +41,22 @@
             android:layout_marginTop="18dp"
             android:layout_marginStart="110dp"
             android:fontFamily="@font/poppins_bold_semi"
-            android:text="@string/fav_list_title"
+            android:text="@string/switch_theme_title"
             android:textColor="@color/white"
             android:textFontWeight="700"
             android:textSize="20sp" />
 
     </androidx.appcompat.widget.Toolbar>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvFavs"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:paddingTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/favToolbar"
-        tools:listitem="@layout/item_user_card" />
-
-    <TextView
-        android:id="@+id/emptyList"
-        android:layout_height="wrap_content"
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_theme"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dark_mode"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="@string/empty_list" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

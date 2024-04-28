@@ -5,10 +5,13 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.fiknaufalh.githubexplorer.data.local.entity.FavoriteUser
 import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.data.remote.retrofit.ApiConfig
 import com.fiknaufalh.githubexplorer.data.MainRepository
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -27,6 +30,9 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
     private val _isSearched = MutableLiveData<Boolean>()
     val isSearched: LiveData<Boolean> = _isSearched
 
+    private val _errorToast = MutableLiveData<Boolean?>()
+    val errorToast: LiveData<Boolean?> = _errorToast
+
     init {
         findUsers("A")
         _isSearched.value = false
@@ -43,6 +49,7 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
                 _isMainLoading.value = false
                 if (response.isSuccessful) {
                     _users.value = response.body()
+                    _errorToast.value = true
                 }
                 else {
                     Log.d(TAG, "onFailResponse: ${response.message()}")
@@ -50,6 +57,7 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
             }
             override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
                 _isMainLoading.value = false
+                _errorToast.value = false
                 Log.d(TAG, "onFailure: ${t.message}")
             }
         })
@@ -61,6 +69,10 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
 
     fun setSearch(s: Boolean) {
         _isSearched.value = s
+    }
+
+    fun resetToast() {
+        _errorToast.value = null
     }
 
     companion object {

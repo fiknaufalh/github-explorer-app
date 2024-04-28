@@ -1,6 +1,7 @@
 package com.fiknaufalh.githubexplorer.data.local
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -39,5 +40,4 @@ class SettingPreferences private constructor(private val dataStore: DataStore<Pr
             }
         }
     }
-
 }

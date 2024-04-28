@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -34,7 +35,6 @@ class FollowFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         binding = FragmentFollowBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -47,9 +47,6 @@ class FollowFragment : Fragment() {
             username = it.getString(ARG_USERNAME)
         }
 
-//        detailViewModel = ViewModelProvider(this,
-//            ViewModelProvider.NewInstanceFactory())[DetailViewModel::class.java]
-
         detailViewModel.followList.observe(viewLifecycleOwner) {
             list -> setFollowListData(list)
         }
@@ -59,27 +56,31 @@ class FollowFragment : Fragment() {
         }
 
         val layoutManager = LinearLayoutManager(this.context)
-        binding.rvFollows.layoutManager = layoutManager
-
         val itemDecoration = DividerItemDecoration(this.context, layoutManager.orientation)
-        binding.rvFollows.addItemDecoration(itemDecoration)
+
+        with (binding) {
+            rvFollows.layoutManager = layoutManager
+            rvFollows.addItemDecoration(itemDecoration)
+        }
 
         val type = if (position == 1) "followers" else "following"
         detailViewModel.findFollow(type, username!!)
     }
 
     private fun setFollowListData(list: List<UserItem>) {
-        binding.tvTotalFollow.text = resources.getString(R.string.follow_result, list.size)
+        with(binding) {
+            tvTotalFollow.text = resources.getString(R.string.follow_result, list.size)
 
-        if (list.isEmpty()) binding.emptyList.text = getString(R.string.empty_list)
-        else {
-            val adapter = UserAdapter(onClickCard = {
-                val intent = Intent(context, DetailActivity::class.java)
-                intent.putExtra("q", it.login)
-                startActivity(intent)
-            })
-            adapter.submitList(list)
-            binding.rvFollows.adapter = adapter
+            if (list.isEmpty()) emptyList.text = getString(R.string.empty_list)
+            else {
+                val adapter = UserAdapter(onClickCard = {
+                    val intent = Intent(context, DetailActivity::class.java)
+                    intent.putExtra("q", it.login)
+                    startActivity(intent)
+                })
+                adapter.submitList(list)
+                rvFollows.adapter = adapter
+            }
         }
     }
 

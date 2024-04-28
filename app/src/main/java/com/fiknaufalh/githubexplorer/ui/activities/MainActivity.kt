@@ -3,8 +3,11 @@ package com.fiknaufalh.githubexplorer.ui.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +18,7 @@ import com.fiknaufalh.githubexplorer.databinding.ActivityMainBinding
 import com.fiknaufalh.githubexplorer.utils.ViewModelFactory
 import com.fiknaufalh.githubexplorer.viewmodels.FavoriteViewModel
 import com.fiknaufalh.githubexplorer.viewmodels.MainViewModel
+import com.fiknaufalh.githubexplorer.viewmodels.SettingViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +29,9 @@ class MainActivity : AppCompatActivity() {
     private val favoriteViewModel: FavoriteViewModel by viewModels<FavoriteViewModel> {
         ViewModelFactory.getInstance(application)
     }
+    private val settingViewModel: SettingViewModel by viewModels<SettingViewModel> {
+        ViewModelFactory.getInstance(application)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +40,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar?.hide()
+        setErrorView(false)
 
         val layoutManager = LinearLayoutManager(this)
-        binding.rvUsers.layoutManager = layoutManager
-
         val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
-        binding.rvUsers.addItemDecoration(itemDecoration)
 
         with (binding) {
+            rvUsers.layoutManager = layoutManager
+            rvUsers.addItemDecoration(itemDecoration)
+
             searchView.setupWithSearchBar(searchBar)
             searchView
                 .editText
@@ -62,7 +70,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
             ivSwitchMode.setOnClickListener {
-                switchTheme()
+                val intent = Intent(this@MainActivity, SettingActivity::class.java)
+                startActivity(intent)
+            }
+
+            ivFavList.setOnClickListener {
+                val intent = Intent(this@MainActivity, FavoriteActivity::class.java)
+                startActivity(intent)
             }
         }
 
@@ -72,6 +86,29 @@ class MainActivity : AppCompatActivity() {
 
         mainViewModel.isMainLoading.observe(this) {
             isMainLoading -> showLoading(isMainLoading)
+        }
+
+        mainViewModel.errorToast.observe(this) {
+            errorToast -> errorToast?.let {
+                if (errorToast) {
+                    Toast.makeText(this, "Success to retrieve the data", Toast.LENGTH_SHORT).show()
+                    mainViewModel.resetToast()
+                } else {
+                    Toast.makeText(this, "Failed to retrieve the data", Toast.LENGTH_SHORT).show()
+                    mainViewModel.resetToast()
+                    setErrorView(true)
+                }
+            }
+        }
+
+        settingViewModel.getThemeSettings().observe(this) { isDarkModeActive: Boolean ->
+            if (isDarkModeActive) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                binding.ivSwitchMode.setImageResource(R.drawable.ic_light_mode)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                binding.ivSwitchMode.setImageResource(R.drawable.ic_dark_mode)
+            }
         }
     }
 
@@ -99,7 +136,10 @@ class MainActivity : AppCompatActivity() {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
-    private fun switchTheme() {
-//        if (binding.ivSwitchMode)
+    private fun setErrorView(isError: Boolean) {
+        val isShow = if (isError) View.VISIBLE else View.GONE
+        binding.ivError.visibility = isShow
+        binding.tvError.visibility = isShow
+        binding.rvUsers.visibility = if (isError) View.GONE else View.VISIBLE
     }
 }

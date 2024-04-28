@@ -24,6 +24,9 @@ class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() 
     private val _isDetailLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isDetailLoading
 
+    private val _errorToast = MutableLiveData<Boolean?>()
+    val errorToast: LiveData<Boolean?> = _errorToast
+
     fun findDetail(q: String) {
         if (userDetail.value?.login != null) return
 
@@ -37,6 +40,7 @@ class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() 
                 _isDetailLoading.value = false
                 if (response.isSuccessful) {
                     _userDetail.value = response.body()
+                    _errorToast.value = true
                 } else {
                     Log.d(TAG, "onResponseFail: ${response.message()} ")
                 }
@@ -44,6 +48,7 @@ class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() 
 
             override fun onFailure(call: Call<UserDetailResponse>, t: Throwable) {
                 _isDetailLoading.value = false
+                _errorToast.value = false
                 Log.d(TAG, "onFailure: ${t.message}")
             }
         })
@@ -64,6 +69,7 @@ class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() 
                 _isDetailLoading.value = false
                 if (response.isSuccessful) {
                     _followList.value = response.body()
+                    _errorToast.value = true
                 } else {
                     Log.d(TAG, "onResponseFail: ${response.message()} ")
                 }
@@ -71,9 +77,14 @@ class DetailViewModel(private val mainRepository: MainRepository) : ViewModel() 
 
             override fun onFailure(call: Call<List<UserItem>>, t: Throwable) {
                 _isDetailLoading.value = false
+                _errorToast.value = false
                 Log.d(TAG, "onFailure: ${t.message}")
             }
         })
+    }
+
+    fun resetToast() {
+        _errorToast.value = null
     }
 
     companion object {

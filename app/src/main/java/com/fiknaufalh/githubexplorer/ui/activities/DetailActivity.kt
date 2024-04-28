@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import com.bumptech.glide.Glide
 import com.fiknaufalh.githubexplorer.R
@@ -21,6 +22,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
+    private lateinit var favoriteUserData: FavoriteUser
     private val detailViewModel by viewModels<DetailViewModel>() {
         ViewModelFactory.getInstance(application)
     }
@@ -35,55 +37,67 @@ class DetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar?.hide()
+        setErrorView(false)
 
         val userName = intent.getStringExtra(resources.getString(R.string.passing_query))
 
-        detailViewModel.userDetail.observe(this) { user ->
-            setUserDetail(user)
-            favoriteViewModel.favoriteUsers.observe(this) {
-                binding.fabFavorite.setOnClickListener {
-                    val favoriteUser = FavoriteUser()
-                    favoriteUser.username = user.login!!
-                    favoriteUser.avatarUrl = user.avatarUrl
-                    favoriteUser.htmlUrl = user.htmlUrl!!
+        val followPagerAdapter = FollowPagerAdapter(this, userName.toString())
 
-                    if (favoriteViewModel.isFavorite(favoriteUser)) {
-                        favoriteViewModel.deleteFavorite(favoriteUser)
-                        binding.fabFavorite.setImageResource(R.drawable.ic_favorite_unfilled)
+        with(binding) {
+            viewPager.adapter = followPagerAdapter
 
-                    } else {
-                        favoriteViewModel.insertFavorite(favoriteUser)
-                        binding.fabFavorite.setImageResource(R.drawable.ic_favorite_filled)
-                    }
+            fabFavorite.setOnClickListener {
+                val favoriteStatus = favoriteViewModel.isFavoriteUser(favoriteUserData)
+                if (favoriteStatus) {
+                    favoriteViewModel.deleteFavorite(favoriteUserData)
+                    fabFavorite.setImageResource(R.drawable.ic_favorite_unfilled)
+                } else {
+                    favoriteViewModel.insertFavorite(favoriteUserData)
+                    fabFavorite.setImageResource(R.drawable.ic_favorite_filled)
                 }
             }
 
-            val followPagerAdapter = user.login?.let { it -> FollowPagerAdapter(this, it) }
-            binding.viewPager.adapter = followPagerAdapter
+            backTab.setOnClickListener { finish() }
+        }
 
-            TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
-                val currentTab = resources.getString(TAB_TITLES[position])
-                val count = if (currentTab == resources.getString(R.string.tab_followers)) {
-                    detailViewModel.userDetail.value?.followers
-                } else {
-                    detailViewModel.userDetail.value?.following
-                }
-
-                tab.text = resources.getString(R.string.tab_text, count, currentTab)
-            }.attach()
-
-            supportActionBar?.elevation = 0f
+        detailViewModel.userDetail.observe(this) { user ->
+            setUserDetail(user)
+            favoriteUserData = FavoriteUser(user.login!!, user.avatarUrl, user.htmlUrl!!)
         }
 
         detailViewModel.isLoading.observe(this) {
-            loading -> showLoading(loading)
+                loading -> showLoading(loading)
+        }
+
+        detailViewModel.errorToast.observe(this) {
+            errorToast -> errorToast?.let {
+                if (errorToast) {
+                    Toast.makeText(this, "Success to retrieve the data", Toast.LENGTH_SHORT).show()
+                    detailViewModel.resetToast()
+                } else {
+                    Toast.makeText(this, "Failed to retrieve the data", Toast.LENGTH_SHORT).show()
+                    detailViewModel.resetToast()
+                    setErrorView(true)
+                }
+            }
         }
 
         detailViewModel.findDetail(userName!!)
 
-        binding.backTab.setOnClickListener { finish() }
+        favoriteViewModel.getFavoriteUserByUsername(userName.toString()).observe(this) {
+                favoriteUser ->
+            if (favoriteUser != null) {
+                binding.fabFavorite.setImageResource(R.drawable.ic_favorite_filled)
+            } else {
+                binding.fabFavorite.setImageResource(R.drawable.ic_favorite_unfilled)
+            }
+        }
 
-
+        TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
+            val currentTab = resources.getString(TAB_TITLES[position])
+            tab.text = currentTab
+        }.attach()
+        supportActionBar?.elevation = 0f
     }
 
     private fun setUserDetail(detail: UserDetailResponse) {
@@ -94,14 +108,18 @@ class DetailActivity : AppCompatActivity() {
             tvUserName.text = detail.login
             tvFullName.text = if (detail.name.isNullOrEmpty()) resources.getString(R.string.undefinedName) else detail.name
             tvMemberSince.text = resources.getString(R.string.member_since, convertedDate)
-            if (detail.email != null) {
-                tvEmail.text = detail.email.toString()
-            } else {
-                tvEmail.visibility = View.GONE
-            }
-//            ivUserProfile.borderColor = resources.getColor(R.color.white)
-            ivUserProfile.borderWidth = 2
 
+            if (detail.location != null) tvLocation.text = detail.location.toString()
+            else {
+                tvLocation.visibility = View.GONE
+                ivLocation.visibility = View.GONE
+            }
+
+            tvPublicReposNum.text = detail.publicRepos.toString()
+            tvFollowersNum.text = detail.followers.toString()
+            tvFollowingNum.text = detail.following.toString()
+
+            ivUserProfile.borderWidth = 2
             ivUserProfile.setOnClickListener {
                 val gitHubIntent = Intent(Intent.ACTION_VIEW, Uri.parse(detail.htmlUrl))
                 startActivity(gitHubIntent)
@@ -116,6 +134,12 @@ class DetailActivity : AppCompatActivity() {
 
     private fun showLoading(state: Boolean) {
         binding.progressBar.visibility = if (state) View.VISIBLE else View.GONE
+    }
+
+    private fun setErrorView(isError: Boolean) {
+        val isShow = if (isError) View.VISIBLE else View.GONE
+        binding.ivError.visibility = isShow
+        binding.tvError.visibility = isShow
     }
 
     companion object {

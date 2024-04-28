@@ -29,4 +29,13 @@
     <string name="fav_list_title">Favorite List</string>
     <string name="switch_mode_icon">Switch Mode Icon</string>
     <string name="favorite_list_icon">Favorite List Icon</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="item_location">Location</string>
+    <string name="followers">Followers</string>
+    <string name="followNum">5000</string>
+    <string name="following">Following</string>
+    <string name="repositories">Repositories</string>
+    <string name="reposNum">20</string>
+    <string name="switch_theme_title">Switch Theme</string>
+    <string name="failed_retrieve_msg">Failed to retrieve the data</string>
 </resources>

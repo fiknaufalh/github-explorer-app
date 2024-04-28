@@ -9,6 +9,7 @@ import com.fiknaufalh.githubexplorer.data.MainRepository
 import com.fiknaufalh.githubexplorer.viewmodels.DetailViewModel
 import com.fiknaufalh.githubexplorer.viewmodels.FavoriteViewModel
 import com.fiknaufalh.githubexplorer.viewmodels.MainViewModel
+import com.fiknaufalh.githubexplorer.viewmodels.SettingViewModel
 
 class ViewModelFactory private constructor(private val mainRepository: MainRepository)
     : ViewModelProvider.NewInstanceFactory() {
@@ -31,6 +32,8 @@ class ViewModelFactory private constructor(private val mainRepository: MainRepos
             return DetailViewModel(mainRepository) as T
         } else if (modelClass.isAssignableFrom(FavoriteViewModel::class.java)) {
             return FavoriteViewModel(mainRepository) as T
+        } else if (modelClass.isAssignableFrom(SettingViewModel::class.java)) {
+            return SettingViewModel(mainRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: " + modelClass.name)
     }

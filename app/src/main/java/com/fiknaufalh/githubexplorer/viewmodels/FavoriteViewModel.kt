@@ -18,10 +18,6 @@ class FavoriteViewModel(private val mainRepository: MainRepository) : ViewModel(
         }
     }
 
-    fun isFavorite(favoriteUser: FavoriteUser): Boolean {
-        return favoriteUsers.value?.any { it.username == favoriteUser.username } ?: false
-    }
-
     fun getAllFavoriteUsers(): LiveData<List<FavoriteUser>> = mainRepository.getAllFavoriteUsers()
 
     fun getFavoriteUserByUsername(username: String) = mainRepository.getFavoriteUserByUsername(username)
@@ -32,5 +28,9 @@ class FavoriteViewModel(private val mainRepository: MainRepository) : ViewModel(
 
     fun deleteFavorite(favoriteUser: FavoriteUser) {
         mainRepository.deleteFavorite(favoriteUser)
+    }
+
+    fun isFavoriteUser(favoriteUser: FavoriteUser): Boolean {
+        return favoriteUsers.value?.any { it.username == favoriteUser.username } ?: false
     }
 }

@@ -49,7 +49,7 @@
             android:id="@+id/ivSwitchMode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_switch_theme"
+            android:src="@drawable/ic_dark_mode"
             android:layout_marginTop="25dp"
             android:layout_marginEnd="20dp"
             app:cardElevation="0dp"
@@ -124,13 +124,29 @@
             android:indeterminateTintMode="src_atop"
             android:indeterminateTint="@color/midnight"/>
 
-        <View
-            android:id="@+id/botView"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/baseline_retrieve_failed"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_medium"
+            android:text="@string/failed_retrieve_msg"
+            android:textColor="@color/midnight"
+            android:textSize="18sp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivError" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
