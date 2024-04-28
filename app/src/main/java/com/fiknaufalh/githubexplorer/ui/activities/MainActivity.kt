@@ -3,12 +3,10 @@ package com.fiknaufalh.githubexplorer.ui.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fiknaufalh.githubexplorer.R
@@ -16,7 +14,6 @@ import com.fiknaufalh.githubexplorer.adapters.UserAdapter
 import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.databinding.ActivityMainBinding
 import com.fiknaufalh.githubexplorer.utils.ViewModelFactory
-import com.fiknaufalh.githubexplorer.viewmodels.FavoriteViewModel
 import com.fiknaufalh.githubexplorer.viewmodels.MainViewModel
 import com.fiknaufalh.githubexplorer.viewmodels.SettingViewModel
 
@@ -24,9 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val mainViewModel: MainViewModel by viewModels<MainViewModel> {
-        ViewModelFactory.getInstance(application)
-    }
-    private val favoriteViewModel: FavoriteViewModel by viewModels<FavoriteViewModel> {
         ViewModelFactory.getInstance(application)
     }
     private val settingViewModel: SettingViewModel by viewModels<SettingViewModel> {
@@ -81,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainViewModel.users.observe(this) {
-            users -> setUserListData(users)
+            users -> setUserList(users)
         }
 
         mainViewModel.isMainLoading.observe(this) {
@@ -112,24 +106,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUserListData(users: SearchResponse) {
-        val adapter = UserAdapter(
-            onClickCard = {
-                val intent = Intent(this@MainActivity, DetailActivity::class.java)
-                intent.putExtra(resources.getString(R.string.passing_query), it.login)
-                startActivity(intent)
-            })
+    private fun setUserList(users: SearchResponse) {
+        val adapter = UserAdapter{
+            val intent = Intent(this@MainActivity, DetailActivity::class.java)
+            intent.putExtra(resources.getString(R.string.passing_query), it.login)
+            startActivity(intent)
+        }
 
         adapter.submitList(users.items)
-        binding.rvUsers.adapter = adapter
-        if (mainViewModel.isSearched.value!!) {
-            binding.tvTotalResult.text =
-                resources.getString(
-                    R.string.search_result_text,
-                    users.totalCount,
-                    users.items?.size ?: 0
-                )
-        } else binding.tvTotalResult.text = resources.getString(R.string.search_me_text)
+        with (binding) {
+            rvUsers.adapter = adapter
+            if (mainViewModel.isSearched.value!!) {
+                tvTotalResult.text =
+                    resources.getString(
+                        R.string.search_result_text,
+                        users.totalCount,
+                        users.items?.size ?: 0
+                    )
+            } else tvTotalResult.text = resources.getString(R.string.search_me_text)
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {

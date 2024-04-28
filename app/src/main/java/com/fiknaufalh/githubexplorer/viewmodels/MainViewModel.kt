@@ -1,17 +1,12 @@
 package com.fiknaufalh.githubexplorer.viewmodels
 
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
-import com.fiknaufalh.githubexplorer.data.local.entity.FavoriteUser
+import com.fiknaufalh.githubexplorer.BuildConfig
 import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
-import com.fiknaufalh.githubexplorer.data.remote.retrofit.ApiConfig
 import com.fiknaufalh.githubexplorer.data.MainRepository
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,7 +35,7 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
 
     fun findUsers(q: String) {
         _isMainLoading.value = true
-        val client = ApiConfig.getApiService().searchUser(q)
+        val client = mainRepository.searchUser(q)
         client.enqueue(object : Callback<SearchResponse> {
             override fun onResponse(
                 call: Call<SearchResponse>,
@@ -52,13 +47,13 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
                     _errorToast.value = true
                 }
                 else {
-                    Log.d(TAG, "onFailResponse: ${response.message()}")
+                    if (BuildConfig.DEBUG) Log.d(TAG, "onFailResponse: ${response.message()}")
                 }
             }
             override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "onFailure: ${t.message}")
                 _isMainLoading.value = false
                 _errorToast.value = false
-                Log.d(TAG, "onFailure: ${t.message}")
             }
         })
     }

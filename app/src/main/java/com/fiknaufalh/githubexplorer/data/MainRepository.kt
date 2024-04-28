@@ -15,7 +15,13 @@ class MainRepository private constructor (
     private val appExecutors: AppExecutors
 ) {
 
-    suspend fun searchUser(query: String) = apiService.searchUser(query)
+    fun searchUser(query: String) = apiService.searchUser(query)
+
+    fun getUserDetail(username: String) = apiService.getUserDetail(username)
+
+    fun getFollowers(username: String) = apiService.getFollowers(username)
+
+    fun getFollowing(username: String) = apiService.getFollowing(username)
 
     fun getAllFavoriteUsers(): LiveData<List<FavoriteUser>> = favoriteUserDao.getAllFavoriteUser()
 

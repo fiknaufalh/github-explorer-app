@@ -2,14 +2,11 @@ package com.fiknaufalh.githubexplorer.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fiknaufalh.githubexplorer.R
@@ -47,11 +44,15 @@ class FollowFragment : Fragment() {
             username = it.getString(ARG_USERNAME)
         }
 
-        detailViewModel.followList.observe(viewLifecycleOwner) {
+        detailViewModel.followersList.observe(viewLifecycleOwner) {
             list -> setFollowListData(list)
         }
 
-        detailViewModel.isLoading.observe(viewLifecycleOwner) {
+        detailViewModel.followingList.observe(viewLifecycleOwner) {
+            list -> setFollowListData(list)
+        }
+
+        detailViewModel.isDetailLoading.observe(viewLifecycleOwner) {
             loading -> showLoading(loading)
         }
 
@@ -63,8 +64,8 @@ class FollowFragment : Fragment() {
             rvFollows.addItemDecoration(itemDecoration)
         }
 
-        val type = if (position == 1) "followers" else "following"
-        detailViewModel.findFollow(type, username!!)
+        if (position == 1) detailViewModel.findFollowers(username!!)
+        else detailViewModel.findFollowing(username!!)
     }
 
     private fun setFollowListData(list: List<UserItem>) {

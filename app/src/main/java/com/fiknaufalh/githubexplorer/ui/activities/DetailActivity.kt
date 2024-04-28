@@ -65,7 +65,7 @@ class DetailActivity : AppCompatActivity() {
             favoriteUserData = FavoriteUser(user.login!!, user.avatarUrl, user.htmlUrl!!)
         }
 
-        detailViewModel.isLoading.observe(this) {
+        detailViewModel.isDetailLoading.observe(this) {
                 loading -> showLoading(loading)
         }
 

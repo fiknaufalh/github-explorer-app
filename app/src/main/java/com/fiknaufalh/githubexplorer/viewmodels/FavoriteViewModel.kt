@@ -1,6 +1,5 @@
 package com.fiknaufalh.githubexplorer.viewmodels
 
-import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,8 +16,6 @@ class FavoriteViewModel(private val mainRepository: MainRepository) : ViewModel(
             favoriteList -> _favoriteUsers.value = favoriteList
         }
     }
-
-    fun getAllFavoriteUsers(): LiveData<List<FavoriteUser>> = mainRepository.getAllFavoriteUsers()
 
     fun getFavoriteUserByUsername(username: String) = mainRepository.getFavoriteUserByUsername(username)
 
