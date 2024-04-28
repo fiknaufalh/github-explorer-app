@@ -15,15 +15,11 @@ import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.databinding.ActivityMainBinding
 import com.fiknaufalh.githubexplorer.utils.ViewModelFactory
 import com.fiknaufalh.githubexplorer.viewmodels.MainViewModel
-import com.fiknaufalh.githubexplorer.viewmodels.SettingViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val mainViewModel: MainViewModel by viewModels<MainViewModel> {
-        ViewModelFactory.getInstance(application)
-    }
-    private val settingViewModel: SettingViewModel by viewModels<SettingViewModel> {
         ViewModelFactory.getInstance(application)
     }
 
@@ -95,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        settingViewModel.getThemeSettings().observe(this) { isDarkModeActive: Boolean ->
+        mainViewModel.getThemeSettings().observe(this) { isDarkModeActive: Boolean ->
             if (isDarkModeActive) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                 binding.ivSwitchMode.setImageResource(R.drawable.ic_light_mode)

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import com.fiknaufalh.githubexplorer.BuildConfig
 import com.fiknaufalh.githubexplorer.data.remote.responses.SearchResponse
 import com.fiknaufalh.githubexplorer.data.MainRepository
@@ -68,6 +69,10 @@ class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
 
     fun resetToast() {
         _errorToast.value = null
+    }
+
+    fun getThemeSettings(): LiveData<Boolean> {
+        return mainRepository.getThemeSettings().asLiveData()
     }
 
     companion object {
